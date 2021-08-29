@@ -1,6 +1,6 @@
 "use strict";
-var isDone = false;
+let isDone = false;
 isDone = true;
 console.log(typeof isDone); // boolean
-var isOk = true;
+let isOk = true;
 // let isNotOk: boolean = new Boolean(true)
