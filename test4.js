@@ -1,2 +1,4 @@
 "use strict";
-const hello = () => { };
+const hello = () => {
+    console.log("hello");
+};

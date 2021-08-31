@@ -1303,3 +1303,329 @@ delete e3 // error
 syntax error가 ts error로 나온다.
 
 컴파일된 JS파일에 "use strict"가 추가 됨.
+
+# Interface
+
+## interface란?
+- interface.ts
+```ts
+function hello1(person: {name: string, age: number}): void{
+    console.log(`안녕 ${person.name}이야.`)
+}
+
+const p1: {name: string, age: number} = {
+    name: "Mark",
+    age: 39
+}
+
+hello1(p1)
+```
+- interface.ts에 공통된 부분을 interface로 만들어 준 후
+```ts
+interface Person1 {
+    name: string,
+    age: number
+}
+
+function hello1(person: Person1): void{
+    console.log(`안녕 ${person.name}이야.`)
+}
+
+const p1: Person1 = {
+    name: "Mark",
+    age: 39
+}
+
+hello1(p1)
+```
+
+- npx tsc를 한 후 interface.ts의 js
+```js
+"use strict";
+function hello1(person) {
+    console.log(`안녕 ${person.name}이야.`);
+}
+const p1 = {
+    name: "Mark",
+    age: 39
+};
+hello1(p1);
+```
+
+```plaintext
+즉, interface부분은 컴파일 되었을 때 사라지게 된다. 컴파일타임에만 필요함. 컴파일 타임에 interface를 이용해서 문제가 없는지 관계를 규명해서 체크해주는 역할을 함.
+```
+
+## optional property
+
+```ts
+interface Person2 {
+    name: string,
+    age?: number
+    // ?를 작성하면 의도적으로 어떤 개체에 프로퍼티가 있을 수도 있고 없을 수도 있는 경우에 사용
+}
+
+function hello2(person: Person2): void {
+    console.log(`안녕 ${person.name}이야.`)
+}
+
+hello2({name: "Mark", age: 39})
+hello2({name: "Anna"})
+```
+
+- interface3.ts
+```ts
+interface Person3 {
+    name: string
+    age?: number
+    [index: string]: any// a['index'] <- 이거랑 같은 의미
+}
+
+function hello3(person: Person3): void {
+    console.log(`안녕 ${person.name}이야.`)
+}
+
+const p31: Person3 = {
+    name: "Mark",
+    age: 39
+}
+
+const p32: Person3 = {
+    name: "Anna",
+    systers: ["Sung", "Chan"]
+}
+
+const p33: Person3 = {
+    name: "Bokdaengi",
+    father: p31,
+    mother: p32
+}
+
+hello3(p33)
+```
+
+## function in interface
+
+- interface4.ts
+```ts
+interface Person4 {
+    name: string
+    age?: number
+    hello(): void
+}
+
+const p41: Person4 = {
+    name: 'Mark',
+    age: 39,
+    hello: function (): void {
+        console.log(`안녕 ${this.name}이야.`)
+    }
+}
+
+const p42: Person4 = {
+    name: 'Mark',
+    age: 39,
+    hello(): void {
+        console.log(`안녕 ${this.name}이야.`)
+    }
+}
+
+// const p42: Person4 = {
+//     name: 'Mark',
+//     age: 39,
+//     hello(this: Person4): void {
+//         console.log(`안녕 ${this.name}이야.`)
+//     }
+// }
+
+// const p43: Person4 = {
+//     name: "Mark",
+//     age: 39,
+//     hello: (): void = > {
+//         console.log(`안녕 ${this.name}이야.`) // this가 없기 때문에 global this를 가리켜서 error가 생긴다.
+//     }
+// }
+
+p41.hello()
+p42.hello()
+```
+
+## class implements interface
+
+```ts
+interface IPerson1 {
+    name: string,
+    age?: number,
+    hello(): void
+}
+// Person은 implements 키워드를 사용해서 interface를 class로 사용할 수 있다.
+class Person implements IPerson1 {
+    name: string;
+    age?: number | undefined;
+
+    constructor(name: string) {
+        this.name = name
+    }
+    hello(): void {
+        console.log(`안녕 ${this.name}이야.`)
+    }
+}
+
+const person0: IPerson1 = new Person("Mark")
+person0.hello()
+```
+
+## interface extends interface
+
+- interface6.ts
+
+```ts
+interface IPerson2 {
+    name: string
+    age?: number
+}
+
+interface IKorean extends IPerson2 {
+    city: string
+}
+
+const k: IKorean = {
+    name: '임성준',
+    city: '인천'
+}
+```
+
+## function interface
+
+- interface7.ts
+```ts
+interface HelloPerson {
+    (name: string, age?: number): void
+}
+
+// error
+// - 원래 HelloPerson의 age는 있을 수도 있고 없을 수도 있는데
+// age: number로 작성하면 무조건 있는걸로 해석해서 error가 생긴다.
+// const helloPerson: HelloPerson = function (name: string, age: number) {
+//     console.log(`안녕 ${name} 이야.`)
+// }
+
+const helloPerson: HelloPerson = function (name: string) {
+    console.log(`안녕 ${name} 이야.`)
+}
+
+helloPerson("Mark", 39)
+```
+- 함수의 타입체크는 helloPerson: HelloPerson 여기서 일어난다.
+- function (name: string)이라고 작성해서 꼭 helloPerson("Mark") 이렇게만 해야하는 것은 아니다.
+- helloPerson() 여기서 보는 것은 helloPerson: HelloPerson = function (name: string) 이 부분이 아니라<br />interface HelloPerson 이 부분이다.
+
+## Readonly Interface Properties
+TS를 사용하는 가장 큰 이유 중에 하나는 코드에 의도를 담아서 다른 사람들 이 코드를 수정하거나 사용하려고 할 때 이것은 이렇게 하면 안돼요라고 의사표시를 하는 것이다.
+
+- interface8.ts
+```ts
+interface Person8 {
+    name: string
+    age?: number
+    readonly gender: string
+}
+
+const p81: Person8 = {
+    name: "Mark",
+    gender: "male"
+}
+
+// p81.gender = "female" // readonly가 있기 때문에 error 생긴다.
+```
+
+```plaintext
+즉, interface에서 어떤 property가 한번만들어지고 바뀌지 않는 값을 가질 경우 readonly를 꼭 써주는 습관이 있어야 한다. interface에서 readonly를 사용하면 class에서도 readonly를 받아다가 그대로 사용할 수 있기 때문에 유용하다.
+```
+
+## type alias vs interface
+- type alias : 어떤 타입을 부르는 이름.
+- interface : 어떤 새로운 타입을 만드는 것.
+
+### function을 만들 때
+- type alias
+```ts
+type EatType = (food: string) => void
+```
+
+- interface
+```ts
+interface IEat {
+    (food: string): void
+}
+```
+
+### array
+- type alias
+```ts
+type PersonList = string[]
+```
+
+- interface
+```ts
+interface IPersonList {
+    [index: number]: string
+}
+```
+
+### intersection
+```ts
+interface ErrorHandling {
+    success: boolean
+    error?: {message: string}
+}
+
+interface ArtistsData {
+    artists: { name: string }[]
+}
+
+// type alias
+type ArtistsResponseType = ArtistsData & ErrorHandling
+
+// interface
+interface IArtistsResponse extends ArtistsData, ErrorHandling {}
+
+let art: ArtistsResponseType
+let iar: IArtistsResponse
+```
+
+### union types
+```ts
+interface Bird {
+    fly(): void
+    layEggs(): void
+}
+
+interface Fish {
+    swim(): void
+    layEggs(): void
+}
+
+type petType = Bird | Fish // union type 만들기
+
+interface IPet extends PetType {} // error TS2312: An interface can only extend an object type or intersection of object types with statically known members.
+
+class Pet implements PetType {} // error TS2422: A class can only implement an object type or intersection of object types with statically known members.
+```
+
+```plaintext
+표현된 type alias union type은 interface한테 상속해줄 수 없고 class한테 implements로 넣어줄 수 없다.
+```
+
+### Declaration Merging - interface만 가능
+```ts
+interface MergingInterface {
+    a: string
+}
+interface MergingInterface {
+    b: string 
+}
+
+let mi: MergingInterface
+mi. // a or b
+```
