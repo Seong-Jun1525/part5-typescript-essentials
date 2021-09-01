@@ -1629,3 +1629,389 @@ interface MergingInterface {
 let mi: MergingInterface
 mi. // a or b
 ```
+
+# Classes
+
+## What are Classes
+- object를 만드는 blueprint(청사진, 설계도)
+- 클래스 이전에 object를 만드는 기본적인 방법은 function
+- JS에도 class는 es6부터 사용 가능
+- OOP을 위한 초석
+- TS에서는 클래스도 사용자가 만드는 타입의 하나
+
+## Quick Start - class
+- example.ts
+```ts
+class Person1 {
+    name
+    
+    constructor(name: string) {
+        this.name = name
+    }
+}
+
+const p0 = new Person1("Mark")
+
+console.log(p0)
+```
+- class 키워드를 이용하여 클래스를 만들 수 있다.
+- class 이름은 보통 대문자를 이용한다.
+- new를 이용하여 class를 통해 object를 만들 수 있다.
+- constructor를 이용하여 object를 생성하면서 값을 전달할 수 있다.
+- this를 이용해서 만들어진 object를 가리킬 수 있다.
+- JS로 컴파일되면 es5의 경우 function으로 변경된다.
+
+## constructor & initialize
+```ts
+class Person10 {
+    name: string = "Mark"
+    age!: number
+
+    constructor(age?: number) {
+        if(age === undefined) {
+            this.age = 20
+        } else {
+            this.age = age
+        }
+    }
+
+    // constructor(age: number) {
+    //     this.age = age
+    // }
+    public async init() {}
+}
+
+const pp1: Person10 = new Person10(22)
+const pp2: Person10 = new Person10()
+
+console.log(pp1)
+console.log(pp1.age)
+```
+
+- 생성자 함수가 없으면, 디폴트 생성자가 불린다.
+- 프로그래머가 만든 생성자가 하나라도 있으면, 디폴트 생성자는 사라진다.
+- strict 모드에서는 프로퍼티를 선언하는 곳 또는 생성자에게 값을 할당해야한다.
+- 프로퍼티를 선언하는 곳 또는 생성자에게 값을 할당하지 않는 경우에는 !를 붙여서 위험을 표현한다.
+- 클래스의 프로퍼티가 정의되어 있지만, 값을 대비하지 않으면 undefined이다.
+- 생성자에는 async를 설정할 수 없다.
+
+## 접근 제어자(Access Modifiers)
+class 내부에는 생성자, 프로퍼티, 메소드에 접근제어자를 붙혀서 외부에서 접근할 수 있는지, 상속간에 접근할 수 있는지, 내부에서만 접근할 수 있는지 등을 설정해준다. TS는 기본적으로 모두 외부에서 접근이 가능하다.
+
+접근 제어자 | 설명
+-- | --
+public | 외부에서 접근할 수 있도록 해주는 접근 제어자
+private | 클래스 내부에서만 접근할 수 있도록 해주는 접근 제어자
+
+```ts
+class Person10 {
+    public name: string = "Mark"
+    private _age!: number
+
+    public constructor(age?: number) {
+        if(age === undefined) {
+            this._age = 20
+        } else {
+            this._age = age
+        }
+    }
+
+    // constructor(age: number) {
+    //     this.age = age
+    // }
+    public async init() {}
+}
+
+const pp1: Person10 = new Person10(22)
+const pp2: Person10 = new Person10()
+
+console.log(pp1)
+// console.log(pp1.age)
+```
+- 접근 제어자에는 public, private, protected가 있다.
+- 설정하지 않으면 public이다.
+- 클래스 내부의 모든 곳에 (생성자, 프로퍼티, 메서드) 설정이 가능하다.
+- private으로 설정하면 클래스 외부에서 접근할 수 없다.
+- JS에서 private 지원하지 않아 오랫동안 프로퍼티나 메서드 이름 앞에 _를 붙여서 표현했다.
+
+## initialization in constructor parameters
+생성자의 parameter를 받아서 바로 그 클래스의 프로퍼티로 초기화 하는 방법
+```ts
+class Person10 {
+    public constructor(public name: string, private age: number) {}
+}
+
+const pp1: Person10 = new Person10("SJ", 22)
+
+console.log(pp1)
+```
+
+## Getters & Setters
+
+```ts
+class Person10 {
+    public constructor(private name1: string, private age: number) {}
+
+    get name() {
+        return this.name1 + " Lim"
+    }
+
+    set name(n: string) {
+        this.name1 = n
+    }
+}
+
+const pp1: Person10 = new Person10("SJ", 22)
+
+console.log(pp1.name) // get을 하는 함수 getter
+pp1.name = "Mark" // set을 하는 함수 setter
+console.log(pp1.name)
+```
+
+## readonly properties
+setting은 할 수 없고 get만 할 수 있는 형태
+
+```ts
+class Person10 {
+
+    public readonly name: string = "Mark"
+    private readonly country: string = "Korea"
+
+    public constructor(private name1: string, private age: number) {
+        this.country = "China"
+    }
+
+    hello() {
+        this.country = "China" // error
+    }
+}
+
+// const pp1: Person10 = new Person10("SJ", 22)
+
+// console.log(pp1.name)
+// pp1.name = "Mark"
+// console.log(pp1.name)
+```
+
+- readonly키워드가 있는 경우에는 public이든 private이든 초기화되는 영역에서만 값을 setting할 수 있다.
+- 다른 곳에서는 다른 값으로 바꿀 수 없다.
+- 프로퍼티를 초기값으로 고정하고 다른 값으로 변경하고 싶지 않을 때 사용.
+
+## index Signatures in class
+
+```ts
+// class -> object
+// A반 : {mark: 'male', jade: 'male'}
+// B반 : {chloe: 'female', alex: 'male', anna: 'female'}
+
+class Students {
+    // mark: string = 'male'
+    // 이렇게 작성하면 문제는 새로운 학생이 들어오면 계속해서 이렇게 적어야한다.
+    
+    [index: string]: "male" | "female"
+}
+
+const sa = new Students()
+sa.mark = "male"
+sa.jade = "male"
+
+console.log(sa)
+
+const sb = new Students()
+sb.chloe = "female"
+sb.alex = "male"
+sb.anna = "female"
+
+console.log(sb)
+```
+
+- 프로퍼티가 동적으로 프로퍼티 이름이 들오는 경우에 고려해볼만한 기능. 
+
+## Static Properties & Methods
+
+- Static Methods
+```ts
+class Person11 {
+    public static hello() {
+        console.log("안녕")
+    }
+}
+
+const pp2 = new Person11()
+
+// pp2.hello()
+
+Person11.hello()
+```
+
+- Static Properties
+```ts
+class Person11 {
+    public static CITY = "Seoul"
+    public static hello() {
+        console.log("안녕", Person11.CITY)
+    }
+}
+
+const pp2 = new Person11()
+
+Person11.hello()
+```
+
+```ts
+class Person11 {
+    public static CITY = "Seoul"
+    public hello() {
+        console.log("안녕", Person11.CITY)
+    }
+    public change() {
+        Person11.CITY = "InChoen"
+    }
+}
+
+const pp2 = new Person11()
+pp2.hello()
+
+const pp3 = new Person11()
+pp3.hello()
+
+pp2.change()
+pp2.hello()
+```
+
+## Singletons
+애플리케이션이 실행되는 중간에 클래스로부터 단 하나의 오브젝트만 생성해서 사용하는 패턴
+
+```ts
+class ClassName {
+
+    private static instance: ClassName | null = null
+
+    public static getInstance(): ClassName {
+        // ClassName으로 부터 만든 object가 있으면 그걸 리턴
+        // ClassName으로 부터 만든 object가 없으면 만들어서 리턴
+        if(ClassName.instance === null) {
+            ClassName.instance = new ClassName()
+        }
+
+        return ClassName.instance
+    }
+
+    private constructor() {
+
+    }
+}
+
+const q = ClassName.getInstance()
+const w = ClassName.getInstance()
+
+console.log(q === w) // true
+```
+
+## 상속
+
+```ts
+class Parent {
+    constructor(protected _name: string, private _age: number) {}
+
+    public print(): void {
+        console.log(`이름은 ${this._name}이고, 나이는 ${this._age} 입니다.`)      
+    }
+}
+
+const p = new Parent("SJ", 22)
+p.print()
+
+class Child extends Parent {
+    // Parent의 생성자를 그대로 가져옴.
+    // Parent의 만들어 준 생성자가 없다면 Parent의 디폴트 생성자를 그대로 따라감.
+    // 즉, Parent의 생성자와 같은 형태로 불러야 함.
+    public gender = "male"
+}
+
+const u = new Child("Lim", 22)
+
+u.gender
+```
+
+- 기존에 있던 값을 오버라이딩 후
+
+```ts
+class Parent {
+    constructor(protected _name: string, private _age: number) {}
+
+    public print(): void {
+        console.log(`이름은 ${this._name}이고, 나이는 ${this._age} 입니다.`)      
+    }
+}
+
+// const p = new Parent("SJ", 22)
+// p.print()
+
+class Child extends Parent {
+    public gender = "male"
+
+    constructor(age: number) {
+        super('Mark Jr.', age)
+    }
+}
+
+const u = new Child(22)
+
+u.print()
+```
+
+- constructor에서 부모의 무언가를 호출하고 싶을 때 (super가 없다는 가정)
+
+```ts
+class Parent {
+    constructor(protected _name: string, private _age: number) {}
+
+    public print(): void {
+        console.log(`이름은 ${this._name}이고, 나이는 ${this._age} 입니다.`)      
+    }
+
+    protected printName(): void {
+        console.log(this._name, this._age)
+    }
+}
+
+class Child extends Parent {
+    public gender = "male"
+
+    constructor(age: number) {
+        // super를 먼저 호출하지 않으면 에러가 발생
+        super('Mark Jr.', age)
+        this.printName()
+    }
+}
+
+const u = new Child(22)
+
+u.print()
+```
+
+## Abstract Classes
+- 완전하지 않은 클래스로 태어날 수 있다.
+- 완전하지 않은 클래스는 new를 이용해서 객체로 만들어 낼 수 없다.
+- 완전하지 않은 객체를 상속과 같은 개념을 이용해서 완전하게 만든 후 사용할 수 있도록 함.
+- Abstract 키워드가 사용된 클래스를 상속하면 Abstract키워드가 붙은 함수를 구현해야 한다.
+- 전구모양을 클릭해서 자동으로 생성할 수 있고, 직접 오버라이드 해서 기능을 구현해서 만들어 줄 수 있다.
+
+```ts
+// abstract를 사용한 경우에는 class 앞에 abstract를 작성하여야 한다.
+abstract class AbstractPerson { 
+    protected _name: string = 'Mark'
+
+    abstract setName(name: string): void // abstract 키워드를 사용했기 때문에 구현을 하지 않는다.
+}
+
+class Person12 extends AbstractPerson {
+    setName(name: string): void {
+        this._name = name
+    }
+}
+
+const p = new Person12()
+p.setName() // error
+```
