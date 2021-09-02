@@ -2015,3 +2015,247 @@ class Person12 extends AbstractPerson {
 const p = new Person12()
 p.setName() // error
 ```
+
+## Generics, Any와 다른 점
+
+```ts
+function helloString(message: string): string {
+    return message
+}
+
+function helloNumber(message: number): number {
+    return message
+}
+```
+
+- 이런식으로 어떤 함수가 들어오는 인자가 나가는 리턴타입이 일정한 규칙을 이루면서 같은 로직을 반복하는 함수가 있다.
+- 이런 문제점을 해결하기 위해서 모든 타입을 다 받을 수 있는 인자를 설정하고 모든 타입을 다 리턴할 수 있는 리턴타입을 설정한다.
+- 이럴때 쓰이는게 Any인데 Any를 사용하게 되면 우리 의도와는 다르게 다른 결과를 가져온다.
+
+- any 사용
+```ts
+function hello0(message: any): any {
+    return message
+}
+
+console.log(hello0("Lim").length)
+console.log(hello0(22).length)
+```
+```plaintext
+any는 모든 것을 받아서 모든 것을 주는 형태이기 때문에 정확히 들어오는 input에 의해서 달라지는 typing을 할 수가 없다.
+```
+
+- Generic 사용
+```ts
+function helloGeneric<T>(message: T): T {
+    return message
+}
+
+console.log(helloGeneric("Mark").length)
+console.log(helloGeneric(22))
+console.log(helloGeneric(true))
+```
+
+```plaintext
+generic을 사용했을 때 장점은 T를 이용하면 type으로 된 연산이 함수내에서 가능하게 된다.
+```
+
+## Generics Basic
+```ts
+function helloBasic<T>(message: T): T {
+    return message
+}
+
+helloBasic<string>("Lim")
+helloBasic(22)
+```
+```ts
+function helloBasic<T, U>(message: T, comment:U): T {
+    return message
+}
+
+helloBasic<string, number>("Lim", 22)
+helloBasic(22, 20)
+```
+
+## Generics Array & Tuple
+- Generics Array
+```ts
+function helloArray<T>(message: T[]) {
+    return message[0]
+}
+
+helloArray(["hello", "world"]) // string
+helloArray(["hello", 5]) // string | number
+```
+
+- Generics Tuple
+```ts
+function helloTuple<T,K>(message: [T, K]): T {
+    return message[0]
+}
+
+helloTuple(["hello", "world"]) // string
+helloTuple(["hello", 5]) // string 
+```
+
+## Generics Function
+```ts
+type HelloFunctionGeneric1 = <T>(message: T) => T
+
+const helloFunction1: HelloFunctionGeneric1 = <T>(message: T): T => {
+    return message
+}
+
+interface HelloFunctionGeneric2 {
+    <T>(message: T): T
+}
+
+const helloFunction2: HelloFunctionGeneric2 = <T>(message: T): T => {
+    return message
+}
+```
+
+## Generics Class
+```ts
+class Person00<T> {
+    private _name: T
+
+    constructor(name: T) {
+        this._name = name
+    }
+}
+
+new Person00("Lim")
+// new Person00<string>(22)
+```
+
+```ts
+class Person00<T, K> {
+    private _name: T
+    private _age: K
+
+    constructor(name: T, age: K) {
+        this._name = name
+        this._age = age
+    }
+}
+
+new Person00("Lim", 22)
+// new Person00<string>(22)
+// new Person00<string, number>("Mark", "Anna")
+```
+
+## Generics with extends
+
+```ts
+// T는 string과 number만 가능
+class PersonExtends<T extends string | number> {
+    private _name: T
+
+    constructor(name: T) {
+        this._name = name
+    }
+}
+
+new PersonExtends("Lim")
+new PersonExtends(22)
+// new PersonExtends(true) error
+```
+
+- type은 항상 가장 작은 범위로 제한을 해주는게 컴파일 타임에 무언가를 체크할 때 훨씬 좋다
+- generic을 사용할 때 extends를 사용하여 제한을 해주는게 좋다.
+
+## keyof & type lookup system
+keyof와 generic을 사용해서 타입을 적절하게 찾아내고 활용할 수 있는 컴파일타임에 타입을 정확하게 찾아낼 수 있는 방식.
+
+```ts
+interface IPerson {
+    name: string
+    age: number
+}
+
+const person9: IPerson = {
+    name: "Mark",
+    age: 22
+}
+
+function getProp(obj: IPerson, key: "name" | "age"): string | number {
+    return obj[key]
+}
+
+function setProp(
+    obj: IPerson,
+    key: "name" | "age",
+    value: string | number
+): void {
+    obj[key] = value // error
+}
+```
+```plaintext
+코드를 위처럼 작성하면 오차가 발생할 수 있다. 예를 들면 getProp에 person9를 넣고 name이란 key를 넣게 되면 "Mark"이기 때문에 string을 얻어내야하는데 결과는 string | number가 나오게 된다.
+"name" | "age"이 부분과 string | number이 부분이 관계성을 가진다 는 특징이 있다.
+```
+
+```ts
+interface IPerson {
+    name: string
+    age: number
+}
+
+const person9: IPerson = {
+    name: "Mark",
+    age: 22
+}
+
+// type Keys = keyof IPerson
+
+// const keys: Keys = "name"
+// 어떤 개체에 keyof를 붙히면 그 결과물이 type으로 나오는데
+// 그 type은 key의 이름으로 된 문자열의 union type으로 만들어 진다.
+
+// IPerson[keyof IPerson]
+// => IPerson["name" | "age"]
+// => IPerson["name"] | IPerson["age"]
+// => string | number
+function getProp(obj: IPerson, key: keyof IPerson): IPerson[keyof IPerson] {
+    return obj[key]
+}
+
+function setProp(
+    obj: IPerson,
+    key: keyof IPerson,
+    value: string | number
+): void {
+    obj[key] = value // error
+}
+```
+
+```ts
+interface IPerson {
+    name: string
+    age: number
+}
+
+const person9: IPerson = {
+    name: "Mark",
+    age: 22
+}
+
+function getProp<T, K extends keyof T>(obj: T, key: K): T[K] {
+    return obj[key]
+}
+
+getProp(person9, "name") // string
+getProp(person9, "age") // age
+
+function setProp<T, K extends keyof T>(
+    obj: T,
+    key: K,
+    value: T[K]
+): void {
+    obj[key] = value
+}
+
+setProp(person9, "name", "Anna")
+```
